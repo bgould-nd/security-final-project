@@ -47,7 +47,9 @@ def generateKeys(key):
 
     return keys
 
-def encode(keys, plaintext):
+def encode(key, plaintext):
+
+    keys = generateKeys(key)
     
     ip = [58, 50, 42, 34, 26, 18, 10, 2,
           60, 52, 44, 36, 28, 20, 12, 4,
@@ -99,7 +101,9 @@ def encode(keys, plaintext):
 
     return rlP
 
-def decode(keys, ciphertext):
+def decode(key, ciphertext):
+
+    keys = generateKeys(key)
 
     ip = [58, 50, 42, 34, 26, 18, 10, 2,
           60, 52, 44, 36, 28, 20, 12, 4,
@@ -224,11 +228,22 @@ def f(input, l):
     output = xor(sP, l)
     return output
 
+def tripleEncode(k1, k2, k3, plaintext):
+    return encode(k3, decode(k2, encode(k1, plaintext)))
+
+def tripleDecode(k1, k2, k3, ciphertext):
+    return decode(k1, encode(k2, decode(k3, ciphertext)))
+
 if __name__ == '__main__':
     ciphertext = '1100101011101101101000100110010101011111101101110011100001110011'
     key        = '0100110001001111010101100100010101000011010100110100111001000100'
-    binary = decode(generateKeys(key), ciphertext)
-    encoded = encode(generateKeys(key), binary)
+
+    k1 = '0100110001001111010101100100010101000011010100110100111001000100'
+    k2 = '0100110001001111010101100100010101000011010100110100111001000111'
+    k3 = '1000110001001111010101100100010101000011010100110100111001000100'
+
+    binary = tripleDecode(k1, k2, k3, ciphertext)
+    encoded = tripleEncode(k1, k2, k3, binary)
     encoded = ''.join([str(i) for i in encoded])
     print(encoded)
     print(ciphertext)
