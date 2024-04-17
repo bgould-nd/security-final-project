@@ -1,7 +1,13 @@
 import tkinter as tk
+from tkinter import filedialog
 ##############
 # ENCRYPTION/DECRYPTION ALGORITHMS
 ###############
+
+def UploadAction(event=None):
+    filename = filedialog.askopenfilename()
+    print('Selected:', filename)
+
 def rsa_encrypt(plain, e, n):
     encrypted = []
     for num in plain: 
@@ -10,9 +16,15 @@ def rsa_encrypt(plain, e, n):
     return("".join(encrypted))
 
 
-
 def update_ui(*args):
     # change available options based on selection
+    if selected_input.get() == "Text":
+        input_entry.grid(row=0,column=1 ,padx=5,pady=5)
+        open_file_button.grid_forget()
+    else:
+        open_file_button.grid(row=0, column=1, padx=5, pady=5)
+        input_entry.grid_forget()
+    
     if selected_option.get() == "RSA" and selected_mode.get() == "Encrypt":
         e_label.grid(row=1,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
         e_entry.grid(row=1,column=1)                        #pack(side=tk.LEFT, padx=(0, 10))
@@ -87,26 +99,34 @@ def encrypt():
         
         if selected_mode.get() == "Encrypt":
             output_text = rsa_encrypt(input_text, e_value, n_value)
-        else:
-            output_text = rsa_decrypt(input_text, d_value, n_value)
+        #else:
+         #   output_text = rsa_decrypt(input_text, d_value, n_value)
         output_entry.delete(0, tk.END)
         output_entry.insert(0, output_text)
         
 
 root = tk.Tk()
 root.title("Encryption/Decryption")
-root.geometry("1000x600")
+root.geometry("1200x600")
 root.config(bg="skyblue", padx=10,pady=10)
 
 
 
 #label for text
-input_label = tk.Label(root, text="Input:", font=("Helvetica", 16))
-input_label.grid(row=0,column=0,padx=5,pady=5)
+#input_label = tk.Label(root, text="Input:", font=("Helvetica", 16))
+#input_label.grid(row=0,column=0,padx=5,pady=5)
+selected_input = tk.StringVar(root)
+selected_input.set("Text") 
+selected_input.trace("w", update_ui) 
+input_menu = tk.OptionMenu(root, selected_input, "Text", "File")
+input_menu.grid(row=0, column=0 ,padx=5,pady=5)
 
 #text entry
-input_entry = tk.Entry(root, width=20)
+input_entry = tk.Entry(root, width=30)
 input_entry.grid(row=0,column=1 ,padx=5,pady=5)
+
+open_file_button = tk.Button(root, text='Open File', command=UploadAction)
+#open_file_button.grid(row=3, column=0, padx=5, pady=5)
 
 #dropdown to choose encryption alg
 selected_option = tk.StringVar(root)
@@ -153,7 +173,7 @@ process_button.grid(row=0,column=4 ,padx=5,pady=5)
 
 output_label = tk.Label(root, text = "Output",font =("Helvetica", 16))
 output_label.grid(row=0, column=5 ,padx=5,pady=5)
-output_entry = tk.Entry(root, width=20)
+output_entry = tk.Entry(root, width=30)
 output_entry.grid(row=0,column=6 ,padx=5,pady=5)
 
 # Start the applications
