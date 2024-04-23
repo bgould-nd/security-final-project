@@ -2,8 +2,6 @@
 Triple DES backend
 '''
 
-# import numpy as np
-
 def arr2binInt(a):
     a = [str(i) for i in a]
     return int(''.join(a), 2)
