@@ -2,6 +2,8 @@
 Triple DES backend
 '''
 
+# import numpy as np
+
 def arr2binInt(a):
     a = [str(i) for i in a]
     return int(''.join(a), 2)
@@ -23,6 +25,10 @@ def splitString(text, size=64):
     if len(text[-1]) < size:
         text[-1] += '0'*(size-len(text[-1]))
     return text
+
+def image2binary(filename):
+    with open(filename, 'rb') as fd:
+        return ''.join([format(x, 'b') for x in fd.read()])
 
 def generateKeys(key):
 
@@ -246,6 +252,8 @@ def tripleEncode(k1, k2, k3, plaintext, inputType='binary'):
 
     if inputType == 'ascii':
         binary = string2binary(plaintext)
+    if inputType == 'image':
+        binary = image2binary(plaintext)
 
     if len(binary) > 64:
         binary = splitString(binary)
@@ -268,6 +276,8 @@ def tripleDecode(k1, k2, k3, ciphertext, inputType='binary'):
     
     if inputType == 'ascii':
         binary = string2binary(ciphertext)
+    if inputType == 'image':
+        binary = image2binary(ciphertext)
 
     if len(binary) > 64:
         binary = splitString(binary)
@@ -303,3 +313,8 @@ if __name__ == '__main__':
     ascii_decoded = tripleDecode(k1, k2, k3, ascii_encoded, inputType='ascii')
     print(ascii_decoded)
     print(ascii_plaintext)
+
+    image_encoded = tripleEncode(k1, k2, k3, 'mario.jpg', inputType='image')
+    image_decoded = tripleDecode(k1, k2, k3, image_encoded, inputType='binary')
+    print(image_decoded[:64])
+    print(image2binary('mario.jpg')[:64])
