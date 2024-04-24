@@ -1,28 +1,23 @@
-import os
+# Handle file types (text, binary, image)
+# Chunk input strings for plaintext
+# Pad input (keys chopped to length, and plaintext)
 
+def string2intlist(string):
+    return [ord(c.lower()) - ord('a') + 1 for c in string]
 
+def intList2string(intList):
+    return ''.join([chr(i - 1 + ord('a')) for i in intList])
 
 #Encrypting function using public key (e,n) and private key d, and plaintext plain, plain is received as an array of numbers, each number represents a character in the plaintext message, returns an array
-
-def encrypt(plain, e, n):
+def rsa_encrypt(plain, e, n):
     encrypted = []
     for num in plain: 
-        encrypted.append((num**e)%n)
+        encrypted.append(pow(num, e)%n)
 
     return(encrypted)
 #Decrypting function using public key (e,n) and private key d and encrypted text encrypted. Encrypted is an array of numbers, each number represents a character in the encrypted message, returns an array of decrypted message.
-def decrypt(encrypted, d, n):
+def rsa_decrypt(encrypted, d, n):
     decrypted = []
     for num in encrypted:
-        decrypted.append((num**d)%n)
+        decrypted.append(pow(num, d)%n)
     return(decrypted)
-#Test functionality
-plainText = [7,4,11,11,14]
-
-print(encrypt(plainText,17,77))
-message = [28,16,44,44,42]
-
-print(decrypt(message,53,77))
-
-
-
