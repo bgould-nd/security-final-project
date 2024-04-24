@@ -1,6 +1,7 @@
 # Handle file types (text, binary, image)
 # Chunk input strings for plaintext
 # Pad input (keys chopped to length, and plaintext)
+# Input type as parameter
 
 def string2intlist(string):
     return [ord(c.lower()) - ord('a') + 1 for c in string]
