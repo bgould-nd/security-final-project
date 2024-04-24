@@ -42,15 +42,15 @@ def clean(key, text):
     text = text.lower()
     return key, text
 
-def encrypt(key, plaintext):
+def vin_encrypt(key, plaintext):
     key, plaintext = clean(key, plaintext)
     return shiftString(plaintext, key2shift(key))
 
-def decrypt(key, ciphertext):
+def vin_decrypt(key, ciphertext):
     key, ciphertext = clean(key, ciphertext)
     reverseShift = [26 - i for i in key2shift(key)]
     return shiftString(ciphertext, reverseShift)
 
 if __name__ == '__main__':
-    print(encrypt('test', 'The quick brown fox jumps over the lazy dog.'))
-    print(decrypt('test', encrypt('test', 'The quick brown fox jumps over the lazy dog.')))
+    print(vin_encrypt('test', 'The quick brown fox jumps over the lazy dog.'))
+    print(vin_decrypt('test', vin_encrypt('test', 'The quick brown fox jumps over the lazy dog.')))

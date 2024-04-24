@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
-##############
-# ENCRYPTION/DECRYPTION ALGORITHMS
-###############
+from vigenere import vin_encrypt, vin_decrypt
+from TripleDes import tripleEncode, tripleDecode
+
 
 def UploadAction(event=None):
     filename = filedialog.askopenfilename()
@@ -40,6 +40,8 @@ def update_ui(*args):
         e_entry.grid_forget()
         n_label.grid_forget()
         n_entry.grid_forget()
+        d_label.grid_forget()
+        d_entry.grid_forget()
         
     if selected_option.get() == "Vigenere":
         vin_label.grid(row=1,column=0)
@@ -49,11 +51,19 @@ def update_ui(*args):
         vin_entry.grid_forget()
         
     if selected_option.get() == "3DES":
-        des_label.grid(row=1,column=0)
-        des_entry.grid(row=1,column=1)
+        des_label1.grid(row=1,column=0)
+        des_entry1.grid(row=1,column=1)
+        des_label2.grid(row=2,column=0)
+        des_entry2.grid(row=2,column=1)
+        des_label3.grid(row=3,column=0)
+        des_entry3.grid(row=3,column=1)
     else:
-        des_label.grid_forget()
-        des_entry.grid_forget()
+        des_label1.grid_forget()
+        des_entry1.grid_forget()
+        des_label2.grid_forget()
+        des_entry2.grid_forget()
+        des_label3.grid_forget()
+        des_entry3.grid_forget()
 
     if selected_option.get() == "AES":
         aes_label.grid(row=1,column=0)
@@ -69,9 +79,17 @@ def encrypt():
     
     #process based on selection
     if selected_option.get() == "Vigenere":
-        #to be implmented: currently just outputs text
-        output_entry.delete(0, tk.END)
-        output_entry.insert(0, input_text)
+        try:
+            vin_key = vin_entry.get()
+        except ValueError:
+            output_entry.delete(0, tk.END)
+            output_entry.insert(0, "must enter key value")
+            return
+        
+        if selected_mode.get() == "Decrypt":
+            output_text = vin_decrypt(vin_key, input_text)
+        else:
+            output_text = vin_encrypt(vin_key, input_text)
    
     elif selected_option.get() == "RSA":
         #get e and n values
@@ -101,8 +119,23 @@ def encrypt():
             output_text = rsa_encrypt(input_text, e_value, n_value)
         #else:
          #   output_text = rsa_decrypt(input_text, d_value, n_value)
-        output_entry.delete(0, tk.END)
-        output_entry.insert(0, output_text)
+    
+    if selected_option.get() == "3DES":
+        try:
+            key1 = des_entry1.get()
+            key2 = des_entry2.get()
+            key3 = des_entry3.get()
+        except ValueError:
+            output_entry.delete(0, tk.END)
+            output_entry.insert(0, "must enter all keys")
+            return
+        if selected_mode.get() == "Decrypt":
+            output_text = tripleDecode(key1, key2, key3, input_text)
+        else:
+            output_text = tripleEncode(key1, key2, key3, input_text)
+            
+    output_entry.delete(0, tk.END)
+    output_entry.insert(0, output_text)
         
 
 root = tk.Tk()
@@ -152,11 +185,15 @@ n_entry = tk.Entry(root, width=3)
 vin_label = tk.Label(root, text ="Vinegere Key",font =("Helvetica", 16))
 vin_entry = tk.Entry(root, width = 10)
 
-des_label = tk.Label(root, text ="DES Key",font =("Helvetica", 16))
-des_entry = tk.Entry(root, width = 10)
+des_label1 = tk.Label(root, text ="Key 1",font =("Helvetica", 16))
+des_entry1 = tk.Entry(root, width = 30)
+des_label2 = tk.Label(root, text ="Key 2",font =("Helvetica", 16))
+des_entry2 = tk.Entry(root, width = 30)
+des_label3 = tk.Label(root, text ="Key 3",font =("Helvetica", 16))
+des_entry3 = tk.Entry(root, width = 30)
 
 aes_label = tk.Label(root, text ="AES Key",font =("Helvetica", 16))
-aes_entry = tk.Entry(root, width = 10)
+aes_entry = tk.Entry(root, width = 30)
 
 # Text entry widget for output
 #output_entry = tk.Entry(frame, width=20)
