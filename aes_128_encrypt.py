@@ -328,8 +328,6 @@ def main():
 	stateArr = encrypt(plaintext_hex, key)	
 	
 
-	
-	
 
 	#for i, word in enumerate(words):
 	#	print(f"w{i}: {word}")
