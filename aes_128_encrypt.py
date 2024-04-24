@@ -129,7 +129,7 @@ def generate_words(given_key,size):
 def initializeStateArr(plaintext,stateArr):
 	for i in range(4):
 		stateArr.append([plaintext[i],plaintext[i+4],plaintext[i+8],plaintext[i+12]])
-	print(f"Initial state arr: {stateArr}")
+	#print(f"Initial state arr: {stateArr}")
 	return stateArr
 	
 
@@ -157,12 +157,12 @@ def shift_rows(currState):
 		for j in range(4):
 			row.append(currState[j][i])
 		rows.append(row)
-	print(rows)
+	#print(rows)
 	for i,row in enumerate(rows):
 		for j in range(i):
 			row = shift(row)
 			rows[i] = row
-	print(rows)
+	#print(rows)
 	cols = []
 	for i in range(4):
 		col = []
@@ -270,62 +270,63 @@ def rowsToCols(currState):
 			else:
 				col.append((currState[j][i]))
 		cols.append(col)
-	print(cols)
+	#print(cols)
 	return cols
 
-def encrypt(words,plaintext_hex,currState):
-	print("ENCRYPTING....\n\n")
-	stateArr = initializeStateArr(plaintext_hex,currState)
+def encrypt(plaintext_hex,key):
+	plaintext_hexArr = [plaintext_hex[i:i+2] for i in range(0, len(plaintext_hex), 2)]
+	#print(plaintext_hexArr)
+	keyArr = [key[i:i+2] for i in range(0, len(key), 2)]
+
+	words = generate_words(keyArr,44)
+	currState = []
+	#print("ENCRYPTING....\n\n")
+	stateArr = initializeStateArr(plaintext_hexArr,currState)
 
 	for round in range(10):
-		print(f"--------ROUND {round}----------\n")
-		print(f"input {stateArr}")
+		#print(f"--------ROUND {round}----------\n")
+		#print(f"input {stateArr}")
 		if (round == 0): 
 			for i in range(4):
 				stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-			print(f"after xor {stateArr}")
+			#print(f"after xor {stateArr}")
 		
 		''' sub columns'''
 		stateArr = sub_cols(currState=stateArr,box=S_BOX)
-		print(f"State arr after sub: {stateArr}")
+		#print(f"State arr after sub: {stateArr}")
 
 		stateArr = shift_rows(currState=stateArr)
-		print(f"state arr after shift: {stateArr}")
+		#print(f"state arr after shift: {stateArr}")
 
 		if (round <9):
-			print("post mixing?")
+			#print("post mixing?")
 			stateArr = mix(currState=stateArr)
-			print(stateArr)
+			#print(stateArr)
 		stateArr = rowsToCols(stateArr)	
 		
 		for i in range(4):
 			stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
-		print(stateArr)
-		print(f"after xor {stateArr}")
+		#print(stateArr)
+		#print(f"after xor {stateArr}")
 
-	return stateArr
+	encrypted = ""
+	for col in stateArr:
+		for item in col:
+			encrypted = encrypted + item
+	#print(f"encrypted: {encrypted}")
 
-
+	return encrypted
 
 
 
 def main():
 
-	key = ["54", "68", "61", "74", "73", "20", "6d", "79", "20", "4b", "75", "6e", "67", "20", "46", "75"]
-	plaintext_hex = ["54", "4f", "4e", "20", "77","6e", "69","54", "6f","65","6e","77","20","20","65","6f"]
-	words = generate_words(key,44)
-	rev_keys = [words[i:i+4] for i in range(0, len(words), 4)][::-1]
-	rev_words = [item for tup in rev_keys for item in tup]
-	stateArr = []
-	stateArr = encrypt(words=words,plaintext_hex=plaintext_hex,currState=stateArr)
-	encrypted = ""
-	for col in stateArr:
-		for item in col:
-			encrypted = encrypted + item
-	print(f"encrypted: {encrypted}")
-
+	key = "5468617473206d79204b756e67204675"
+	plaintext_hex = "544f4e20776e69546f656e772020656f"
 	
-	print(stateArr)
+	
+	stateArr = encrypt(plaintext_hex, key)	
+	
 
 	
 	
