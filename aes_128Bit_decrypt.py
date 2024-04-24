@@ -346,6 +346,7 @@ def main():
 
 	key = ["54", "68", "61", "74", "73", "20", "6d", "79", "20", "4b", "75", "6e", "67", "20", "46", "75"]
 	plaintext_hex = ["54", "4f", "4e", "20", "77","6e", "69","54", "6f","65","6e","77","20","20","65","6f"]
+	
 	words = generate_words(key,44)
 	rev_keys = [words[i:i+4] for i in range(0, len(words), 4)][::-1]
 	rev_words = [item for tup in rev_keys for item in tup]
