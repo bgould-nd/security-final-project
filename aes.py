@@ -1,14 +1,57 @@
 import sys
 
+
+
+
 #Example round key expansion in hex, 128 bit 
-#Round key 0: 54 68 61 74 73 20 6D 79 20 4B 75 6E 67 20 46 75
-#Round key 1: E2 32 FC F1 91 12 91 88 B1 59 E4 E6 D6 79 A2 93
-#Round Key 2: 56 08 20 07 C7 1A B1 8F 76 43 55 69 A0 3A F7 FA
+#Round key 0: 54 68 61 74
+#  73 20 6D 79
+#  20 4B 75 6E 
+# 67 20 46 75
+#Round key 1: E2 32 FC F1 
+# 91 12 91 88 
+# B1 59 E4 E6
+#  D6 79 A2 93
+#Round Key 2: 56 08 20 07 
+# C7 1A B1 8F
+#  76 43 55 69 
+# A0 3A F7 FA
+#Round 3: D2 60 0D E7 
+# 15 7A BC 68 
+# 63 39 E9 01 
+# C3 03 1E FB
 
 
+def xor_hex(hex_str_one,hex_str_two):
+    a = bin(int(hex_str_one.upper(), 16))[2:].zfill(16)
+    b = bin(int(hex_str_two.upper(), 16))[2:].zfill(16)
+    binArr = [int(a1) ^ int(b1) for a1, b1 in zip(a, b)]
+    binary_string = ''.join(map(str, binArr))
+    
+    # Pad the binary string if necessary
+    padded_binary_string = binary_string.ljust((len(binary_string) + 7) // 8 * 8, '0')
+    
+    # Split the binary string into 8-bit chunks
+    chunks = [padded_binary_string[i:i+8] for i in range(0, len(padded_binary_string), 8)]
+    
+    # Convert each chunk to hexadecimal and store in a list
+    hex_bytes = [hex(int(chunk, 2))[2:].zfill(2) for chunk in chunks]
+    
+    return hex_bytes
+    
 
+def xor_binary_hex(hex_str_one,bin_num):
+    b = bin(int(hex_str_one, 16))[2:].zfill(32)
+    return [int(a1) ^ int(b1) for a1, b1 in zip(bin_num, b)]
 
-S_BOX = [
+roundConst = [0x00000000, 0x01000000, 0x02000000,
+		0x04000000, 0x08000000, 0x10000000, 
+		0x20000000, 0x40000000, 0x80000000, 
+		0x1b000000, 0x36000000]
+        
+def sub(word):
+    return[(S_BOX[int(byte[0],16)][int(byte[1],16)]) for byte in word]
+S_BOX =[
     # Row 0
     ["63", "7C", "77", "7B", "F2", "6B", "6F", "C5", "30", "01", "67", "2B", "FE", "D7", "AB", "76"],
     # Row 1
@@ -45,84 +88,99 @@ S_BOX = [
 
 
 originalKey = '5468617473206D79204B756E67204675'
+secondKey = "E232FCF191129188B159E4E6D679A293"
 originalKey = originalKey.upper()
 round_keys = [0 for x in range(10)]
 round_keys[0] = originalKey
+round_keys[1] = secondKey
 #Pattern for left shifts in bytes for 128 bit key
 left_shifts_one = [1,2,4,8,16,32,64,128,27,54]
 
 #Function to perform left circular shift
-def circular_shift_hex(hex_number, shift_bytes):
-    # Convert hex number to binary string
-    binary_string = bin(int(hex_number, 16))[2:]
+def circular_shift_hex(hex_word):
+    return hex_word[1:] + hex_word[:1]
+    '''  # Convert hex number to binary string
+    binary_string = bin(int(hex_word, 16))[2:]
 
     # Ensure the binary string has a length that is a multiple of 4
-    binary_string = binary_string.zfill(len(hex_number) * 4)
+    binary_string = binary_string.zfill(len(hex_word) * 4)
 
     # Perform circular shift
-    shifted_binary = binary_string[shift_bytes * 8:] + binary_string[:shift_bytes * 8]
+    shifted_binary = binary_string[8:] + binary_string[:8]
 
     # Convert the shifted binary string back to hexadecimal
     shifted_hex = hex(int(shifted_binary, 2))[2:]
 
     # Ensure the resulting hex string has the same length as the input hex number
-    shifted_hex = shifted_hex.zfill(len(hex_number))
+    shifted_hex = shifted_hex.zfill(len(hex_word))'''
+  
 
-    return shifted_hex.upper()
-#Function to split key string into "words" or 4, 4 byte words
-def create_words(full_key):
-    words = [full_key[i:i+8] for i in range(0, len(full_key),8)]
-    return words
+    return shifted_hex
+
+
 
 
 #Function to generate a key based on its index (uses the previous key as well)
-def generate_next_key(index):
-    words = create_words(round_keys[index-1]) 
-    print(f"words: {words} ")
-    #step 1: perform left circular shift on previous key
-    rotated_key = "".join([circular_shift_hex(word, left_shifts_one[index-1]) for word in words])  
-    print(f"rotated key: {rotated_key}")
-    rotated_bytes = [rotated_key[i:i+2] for i in range(0, len(rotated_key), 2)]
-    #Each byte msb and lsb represent row and column in s-box table, then take that value and replace it
-    s_substitution =[(S_BOX[int(byte[0],16)][int(byte[1],16)]) for byte in rotated_bytes]
-    print(f"subbed key: {s_substitution}")
-    #Split into words again
-    subbed_words = create_words("".join(s_substitution))
-    print(f"subbed words: {subbed_words}")
+def generate_keys(key,size):
+    allWords = [[]]*size #array of arrays representing each of the words needed, size varies based on key length (ie; 44 for 128)
+     
+    for i in range(4):
+        allWords[i] = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]]
+
+
+
+    #fill out all the words 
+
+    for wordCount in range (4,size):
+        print()
+        print(wordCount)
+        #prior words that are needed
+        tmp = allWords[wordCount -1]
+        word = allWords[wordCount -4]
+        print(f"tmp #1: {tmp}")
+        print(f"word #1: {word}")
+
+        #if multiple of 4, the rotation and substitution, and round const xoring occurs
+        
+        if wordCount % 4 == 0:
+            #send to function to rotate word
+            x = circular_shift_hex(tmp)
+            print(f"x #1: {x}")
+        
+            #send to sbox to make substitutions
+            y = sub(x)
+            print(f"y #1: {y}")
+            rcon = roundConst[int(wordCount/4)]
+            print(f"rcon: {roundConst}")
+        
+            tmp = xor_hex("".join(y), "".join(hex(rcon)[2:]))
+            print(f"tmp #2: {tmp}")
+        word = ''.join(word)
+        print(f"word #2: {word}")
   
-    # Define round constants for AES, numbers in hex to be xored with the fourth word in the key
-    round_constants = [
-        "01000000",
-        "02000000",
-        "04000000",
-        "08000000",
-        "10000000",
-        "20000000",
-        "40000000",
-        "80000000",
-        "1B000000",
-        "36000000"
-    ]
-    #xor the fourth word with the round constant for this round
-    new_word_3 = hex(int(subbed_words[3], 16) ^ int(round_constants[index-1], 16))[2:].zfill(8)
-    #XOR this the fourth word, or word 3 original word 0 to create word 4, then xor word four and word 1 to get word 5, xor word 5 and word 2 to get word 6 etc
-    word_4 = hex(int(words[0], 16) ^ int(new_word_3, 16))[2:].zfill(8)
-    word_5 = hex(int(words[1], 16) ^ int(word_4, 16))[2:].zfill(8)
-    word_6 = hex(int(words[2], 16) ^ int(word_5, 16))[2:].zfill(8)
-    word_7 = hex(int(words[3], 16) ^ int(word_6, 16))[2:].zfill(8)
-    #words 4, 5, 6 and 7 make up the next round key 
-    new_key = "".join([word.upper() for word in [word_4, word_5, word_6, word_7]])
-    round_keys[index] = new_key
-    
+        tmp = ''.join(tmp)
+        print(f"tmp #3: {tmp}")
+        xored = xor_hex (word, tmp)
+        print(f"xored: {xored}")
+ 
+        allWords[wordCount] = xored
+    return allWords
+
     
 
-   
+def main():
+    key = ["54", "68", "61", "74", "73", "20", "6d", "79", "20", "4b", "75", "6e", "67", "20", "46", "75"]
+
+    #get key expansion
+    keyWords = generate_keys(key,44)
+
+    print("Key provided: " + "".join(key))
+    print("\n\nKeywords: \n")
+    for word in keyWords:
+        print(word)
+    for i in range(len(keyWords)):
+	    print("w" + str(i), "=", keyWords[i][0], keyWords[i][1], keyWords[i][2], keyWords[i][3])
 
 
-generate_next_key(1)
-
-generate_next_key(2)
-
-print(round_keys)
-
-
+if __name__ == '__main__':
+	main()
