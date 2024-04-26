@@ -56,17 +56,43 @@ inv_const_matrix = [
 
 ]
 
+def hex2Bin(hex_string):
+	
+	binary_string = bin(int(hex_string, 16)).lstrip('0b')
+
+	return binary_string
+
+def bin2Hex(binary_string):
+	padded_binary_string = ''.join(['0' * (8 - len(byte)) + byte if len(byte) < 8 else byte for byte in binary_string.split()])
+
+# Convert binary string to hexadecimal string
+	hex_string = '{:X}'.format(int(padded_binary_string, 2))
+	padded_hex_string = hex_string.zfill(len(hex_string) + len(hex_string) % 2)
+	return padded_hex_string.lower()
+
+def string2binary(text):
+    return ''.join(format(ord(i), '08b') for i in text)
+
+def image2binary(filename):
+    with open(filename, 'rb') as fd:
+        return ''.join([format(x, 'b') for x in fd.read()])
+
 def s_box(word,box):
 	subbedWord = ()
-
+		
 	for i in range(4):
+		if len(word[i]) < 2:
+			word[i] = "0" + word[i]
+		#currWord = word[i].zfill(len(word[i]) + len(word[i]) % 2)
+
+
 		#using msb and lsb get the row and column in decimal form
 		if word[i][0].isdigit() == False:
 			row = ord(word[i][0]) - 86
 		else:
 			row = int(word[i][0])+1
 
-		#repeat above for the seoncd char
+		#repeat above for the second char
 		if word[i][1].isdigit() == False:
 			col = ord(word[i][1]) - 86
 		else:
@@ -80,6 +106,12 @@ def s_box(word,box):
 			new_val = '0' + new_val
 		subbedWord = (*subbedWord, new_val)
 	return "".join(subbedWord)
+	
+def splitString(text, size=128):
+    text = [text[i:i+size] for i in range(0, len(text), size)]
+    if len(text[-1]) < size:
+        text[-1] += '0'*(size-len(text[-1]))
+    return text
 
 def shift(curr_word):
     return curr_word[1:] + curr_word[:1]
@@ -127,9 +159,7 @@ def generate_words(given_key,size):
 
 
 def initializeStateArr(plaintext,stateArr):
-	for i in range(4):
-		stateArr.append([plaintext[i],plaintext[i+4],plaintext[i+8],plaintext[i+12]])
-	#print(f"Initial state arr: {stateArr}")
+	stateArr = [plaintext[i:i+4] for i in range(0, len(plaintext), 4)]
 	return stateArr
 	
 
@@ -157,12 +187,10 @@ def shift_rows(currState):
 		for j in range(4):
 			row.append(currState[j][i])
 		rows.append(row)
-	#print(rows)
 	for i,row in enumerate(rows):
 		for j in range(i):
 			row = shift(row)
 			rows[i] = row
-	#print(rows)
 	cols = []
 	for i in range(4):
 		col = []
@@ -185,8 +213,6 @@ def shift_rows_right(currState):
     cols = [[shifted_rows[j][i] for j in range(4)] for i in range(4)]
     
     return cols
-
-
 		
 def gMult(num,mult):
 	binNum = format(num, '08b')
@@ -270,69 +296,81 @@ def rowsToCols(currState):
 			else:
 				col.append((currState[j][i]))
 		cols.append(col)
-	#print(cols)
 	return cols
 
-def encrypt(plaintext_hex,key):
-	plaintext_hexArr = [plaintext_hex[i:i+2] for i in range(0, len(plaintext_hex), 2)]
-	#print(plaintext_hexArr)
-	keyArr = [key[i:i+2] for i in range(0, len(key), 2)]
-
-	words = generate_words(keyArr,44)
-	currState = []
-	#print("ENCRYPTING....\n\n")
-	stateArr = initializeStateArr(plaintext_hexArr,currState)
-
-	for round in range(10):
-		#print(f"--------ROUND {round}----------\n")
-		#print(f"input {stateArr}")
-		if (round == 0): 
-			for i in range(4):
-				stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-			#print(f"after xor {stateArr}")
-		
-		''' sub columns'''
-		stateArr = sub_cols(currState=stateArr,box=S_BOX)
-		#print(f"State arr after sub: {stateArr}")
-
-		stateArr = shift_rows(currState=stateArr)
-		#print(f"state arr after shift: {stateArr}")
-
-		if (round <9):
-			#print("post mixing?")
-			stateArr = mix(currState=stateArr)
-			#print(stateArr)
-		stateArr = rowsToCols(stateArr)	
-		
-		for i in range(4):
-			stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
-		#print(stateArr)
-		#print(f"after xor {stateArr}")
-
+def encrypt(key,ciphertext,inputType='binary'):
+	key = bin2Hex(key)
+	binary = ciphertext
+	if inputType == 'ascii':
+		binary = string2binary(ciphertext)
+	if inputType == 'image':
+		binary = image2binary(ciphertext)
+	if len(binary) > 64:
+		binary = splitString(binary)
 	encrypted = ""
-	for col in stateArr:
-		for item in col:
-			encrypted = encrypted + item
-	#print(f"encrypted: {encrypted}")
+	for b in binary:
+		plaintext_hex = bin2Hex(b)
+		#print(plaintext_hex)
+		plaintextArr = [plaintext_hex[i:i+2] for i in range(0, len(plaintext_hex), 2)]
+		#print(plaintext_hexArr)
+		keyArr = [key[i:i+2] for i in range(0, len(key), 2)]
 
-	return encrypted
+		words = generate_words(keyArr,44)
+		#print(f"WORDS\n\n{words}")
+		currState = []
+		#print("ENCRYPTING....\n\n")
+		stateArr = initializeStateArr(plaintextArr,currState)
+		#print(stateArr)
+		for round in range(10):
+			#print(f"--------ROUND {round}----------\n")
+			#print(f"input\n {stateArr}")
+			if (round == 0): 
+				for i in range(4):
+					stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
+				#print(f"after xor {stateArr}")
+			
+			''' sub columns'''
+			stateArr = sub_cols(currState=stateArr,box=S_BOX)
+			#print(f"State arr after sub:\n {stateArr}")
+
+			stateArr = shift_rows(currState=stateArr)
+			#print(f"state arr after shift:\n {stateArr}")
+
+			if (round <9):
+				#print("post mixing?")
+				stateArr = mix(currState=stateArr)
+				#print(stateArr)
+			stateArr = rowsToCols(stateArr)	
+			
+			for i in range(4):
+				stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
+			#print(f"after xor \n{stateArr}")
+
+		b_encrypt = ""
+		for col in stateArr:
+			for item in col:
+				b_encrypt = b_encrypt + item
+		encrypted = encrypted + b_encrypt
+		
+	return hex2Bin(encrypted)
+
 
 
 
 def main():
 
-	key = "5468617473206d79204b756e67204675"
-	plaintext_hex = "544f4e20776e69546f656e772020656f"
-	
-	
-	stateArr = encrypt(plaintext_hex, key)	
-	
+	key = "01010100011010000110000101110100011100110010000001101101011110010010000001001011011101010110111001100111001000000100011001110101"
 
+	binary_str = "01010100011101110110111100100000010011110110111001100101001000000100111001101001011011100110010100100000010101000111011101101111"
 
-	#for i, word in enumerate(words):
-	#	print(f"w{i}: {word}")
-	#	if i % 4 == 0:
-	#		print()
+	
+	stateArr = encrypt(key,'taylor.jpeg','image')
+
+	stateArr = encrypt(key,binary_str,'binary')
+	
+	
+	
+	
 	
 
 if __name__ == '__main__':
