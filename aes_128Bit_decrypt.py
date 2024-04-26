@@ -55,6 +55,32 @@ inv_const_matrix = [
     [0x0b, 0x0d, 0x09, 0x0e]
 
 ]
+def hex2Bin(hex_string):
+	
+	binary_string = bin(int(hex_string, 16)).lstrip('0b')
+
+	return binary_string
+
+def bin2Hex(binary_string):
+	padded_binary_string = ''.join(['0' * (8 - len(byte)) + byte if len(byte) < 8 else byte for byte in binary_string.split()])
+
+# Convert binary string to hexadecimal string
+	hex_string = '{:X}'.format(int(padded_binary_string, 2))
+	padded_hex_string = hex_string.zfill(len(hex_string) + len(hex_string) % 2)
+	return padded_hex_string.lower()
+
+def string2binary(text):
+    return ''.join(format(ord(i), '08b') for i in text)
+
+def image2binary(filename):
+    with open(filename, 'rb') as fd:
+        return ''.join([format(x, 'b') for x in fd.read()])
+
+def splitString(text, size=128):
+    text = [text[i:i+size] for i in range(0, len(text), size)]
+    if len(text[-1]) < size:
+        text[-1] += '0'*(size-len(text[-1]))
+    return text
 
 def s_box(word,box):
 	subbedWord = ()
@@ -120,21 +146,21 @@ def generate_words(given_key,size):
 			tmp = xor(subbed,hex(rcon)[2:])
 		xored_val = xor("".join(word),"".join(tmp))
 		words[i] = (xored_val[:2], xored_val[2:4], xored_val[4:6], xored_val[6:8])
-	
-	return words
+	print(words)
+	keys = []
+	keys = [words[i:i+4] for i in range(0, len(words), 4)]
+	return keys
 
-'''Functions for encryption'''
 
 
 def initializeStateArr(plaintext,stateArr):
-	for i in range(4):
-		stateArr.append([plaintext[i],plaintext[i+4],plaintext[i+8],plaintext[i+12]])
-	print(f"Initial state arr: {stateArr}")
+	stateArr = [plaintext[i:i+4] for i in range(0, len(plaintext), 4)]
+	#print(f"Initial state arr: {stateArr}")
 	return stateArr
 	
 
 def xorStateArrCol(currState,word,col_num):
-	xored_col = xor("".join(currState[col_num]),"".join(word))
+	xored_col = xor("".join(word),"".join(currState[col_num]))
 	if len(xored_col) < 8:
 		xored_col = "0" + xored_col
 	
@@ -157,12 +183,12 @@ def shift_rows(currState):
 		for j in range(4):
 			row.append(currState[j][i])
 		rows.append(row)
-	print(rows)
+	#print(rows)
 	for i,row in enumerate(rows):
 		for j in range(i):
 			row = shift(row)
 			rows[i] = row
-	print(rows)
+	#print(rows)
 	cols = []
 	for i in range(4):
 		col = []
@@ -270,97 +296,75 @@ def rowsToCols(currState):
 			else:
 				col.append((currState[j][i]))
 		cols.append(col)
-	print(cols)
 	return cols
 
-def encrypt(words,plaintext_hex,currState):
-	print("ENCRYPTING....\n\n")
-	stateArr = initializeStateArr(plaintext_hex,currState)
+def decrypt(key,ciphertext,inputType='binary'):
+	key = bin2Hex(key)
+	binary = ciphertext
+	if inputType == 'ascii':
+		binary = string2binary(ciphertext)
+	if inputType == 'image':
+		binary = image2binary(ciphertext)
+	if len(binary) > 64:
+		binary = splitString(binary)
+	decrypted = ""
+	for b in binary:
+		plaintext_hex = bin2Hex(b)
+		#print(plaintext_hex)
+		plaintextArr = [plaintext_hex[i:i+2] for i in range(0, len(plaintext_hex), 2)]
+		#print(plaintext_hexArr)
+		keyArr = [key[i:i+2] for i in range(0, len(key), 2)]
 
-	for round in range(10):
-		print(f"--------ROUND {round}----------\n")
-		print(f"input {stateArr}")
-		if (round == 0): 
+		keys = generate_words(keyArr,44)
+		#print(f"WORDS\n\n{words}")
+		currState = []
+		#print("decryptING....\n\n")
+		stateArr = initializeStateArr(plaintextArr,currState)
+		#print(stateArr)
+		print(keys[-1])
+		for i in range(4):
+			stateArr = xorStateArrCol(stateArr,keys[-1][i],i)
+		for r in range(9,0,-1):
+			print(keys[r])
+			stateArr = shift_rows_right(currState=stateArr)
+			stateArr = sub_cols(stateArr,INV_S_BOX)
 			for i in range(4):
-				stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-			print(f"after xor {stateArr}")
-		
-		''' sub columns'''
-		stateArr = sub_cols(currState=stateArr,box=S_BOX)
-		print(f"State arr after sub: {stateArr}")
-
-		stateArr = shift_rows(currState=stateArr)
-		print(f"state arr after shift: {stateArr}")
-
-		if (round <9):
-			print("post mixing?")
+				stateArr = xorStateArrCol(stateArr,keys[r][i],i)
 			stateArr = mix(currState=stateArr)
-			print(stateArr)
-		stateArr = rowsToCols(stateArr)	
-		
-		for i in range(4):
-			stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
-		print(stateArr)
-		print(f"after xor {stateArr}")
-
-	return stateArr
-
-def decrypt(words,cipher_text,currState):
-	stateArr = initializeStateArr(cipher_text,currState)
-
-	print(f"Words: {words}\n")
-	for round in range(10):
-		print(f"--------ROUND {round}----------\n")
-		print(f"input {stateArr}")
-		if (round == 0): 
-			for i in range(4):
-				stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-			print(f"after xor {stateArr}")
-		
-		
-		stateArr = shift_rows_right(currState=stateArr)
-		print(f"state arr after shift: {stateArr}")
-		''' sub columns'''
-		stateArr = sub_cols(currState=stateArr,box=INV_S_BOX)
-		print(f"State arr after sub: {stateArr}")
-		
-		for i in range(4):
-			stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
-		print(stateArr)
-		print(f"after xor {stateArr}")
-		
-
-		if (round < 9):
-			print("post mixing?")
-			stateArr = invMix(currState=stateArr)
-			print(stateArr)
+				#print(stateArr)
 			stateArr = rowsToCols(stateArr)	
-		
-		
+		stateArr = shift_rows_right(stateArr)
+		stateArr = sub_cols(stateArr,INV_S_BOX)
+		print(keys[0])
+		for i in range(4):
+			stateArr = xorStateArrCol(stateArr,keys[0][i],i)
 
-	return stateArr
+			
+
+
+		b_decrypt = ""
+		for col in stateArr:
+			for item in col:
+				b_decrypt = b_decrypt + item
+		decrypted = decrypted + b_decrypt
+	print(decrypted)
+	print(hex2Bin(decrypted))
+	return hex2Bin(decrypted)
+
+		
+		
+		
 
 
 
 def main():
 
-	key = ["54", "68", "61", "74", "73", "20", "6d", "79", "20", "4b", "75", "6e", "67", "20", "46", "75"]
-	plaintext_hex = ["54", "4f", "4e", "20", "77","6e", "69","54", "6f","65","6e","77","20","20","65","6f"]
-	
-	words = generate_words(key,44)
-	rev_keys = [words[i:i+4] for i in range(0, len(words), 4)][::-1]
-	rev_words = [item for tup in rev_keys for item in tup]
-	stateArr = []
-	stateArr = encrypt(words=words,plaintext_hex=plaintext_hex,currState=stateArr)
-	encrypted = ""
-	for col in stateArr:
-		for item in col:
-			encrypted = encrypted + item
-	print(f"encrypted: {encrypted}")
+	#key = "5468617473206d79204b756e67204675"
+	#cipher_text = "29c3505f571420f6402299b31a02d73a"
+	key = "01010100011010000110000101110100011100110010000001101101011110010010000001001011011101010110111001100111001000000100011001110101"
+	cipher_bin = "00101001110000110101000001011111010101110001010000100000111101100100000000100010100110011011001100011010000000101101011100111010"
+	stateArr = decrypt(key,cipher_bin,inputType='binary')
 
-	stateArr = decrypt(words=rev_words,cipher_text=encrypted,currState=stateArr)
-	print("decrypted")
-	print(stateArr)
 
 	
 	
