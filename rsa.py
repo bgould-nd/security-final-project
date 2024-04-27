@@ -1,16 +1,18 @@
-# Handle file types (text, binary, image)
-# Chunk input strings for plaintext
-# Input type as parameter
+'''
+RSA backend
+'''
 
 def string2intlist(string):
-    l = [ord(c) for c in string]
-    print(l)
-    return l
+    return [ord(c) for c in string]
 
 def intList2string(intList):
-    l = ''.join([chr(i) for i in intList])
-    print(intList)
-    return l
+    return ''.join([chr(i) for i in intList])
+
+def hex2intList(hex):
+    return [int(i, 16) for i in hex.split('\\x')[1:]]
+
+def intList2hex(intList):
+    return ''.join(['\\' + hex(i)[1:] for i in intList])
 
 def binary2intList(bin):
     return [int(bin[i:i+8],2) for i in range(0,len(bin),8)]
@@ -21,6 +23,11 @@ def intList2binary(intList):
 def image2binary(filename):
     with open(filename, 'rb') as fd:
         return ''.join([format(x, 'b') for x in fd.read()])
+    
+def binary2image(bin, filename):
+    with open(filename, 'wb') as fd:
+        fd.write(bytearray(bin, 'ascii'))
+    return
 
 #Encrypting function using public key (e,n) and private key d, and plaintext plain, plain is received as an array of numbers, each number represents a character in the plaintext message, returns an array
 def rsa_encrypt(plain, e, n, inputType='binary'):
@@ -33,15 +40,19 @@ def rsa_encrypt(plain, e, n, inputType='binary'):
         intList = binary2intList(image2binary(plain))
     if inputType == 'binary':
         intList = binary2intList(plain)
+    if inputType == 'hex':
+        intList = hex2intList(plain)
 
-    encrypted = []
-    for num in intList: 
-        encrypted.append(pow(num, e)%n)
+    encrypted = [pow(num, e, n) for num in intList]
 
     if inputType == 'ascii':
-        return intList2string(encrypted)
-    if inputType == 'image' or inputType == 'binary':
-        return intList2binary(encrypted)
+        return intList2hex(encrypted)
+    if inputType == 'image':
+        intList = binary2intList(image2binary(encrypted))
+    if inputType == 'binary':
+        intList = binary2intList(encrypted)
+    if inputType == 'hex':
+        intList = intList2hex(encrypted)
     return encrypted
     
 #Decrypting function using public key (e,n) and private key d and encrypted text encrypted. Encrypted is an array of numbers, each number represents a character in the encrypted message, returns an array of decrypted message.
@@ -55,23 +66,20 @@ def rsa_decrypt(encrypted, d, n, inputType='binary'):
         intList = binary2intList(image2binary(encrypted))
     if inputType == 'binary':
         intList = binary2intList(encrypted)
+    if inputType == 'hex':
+        intList = hex2intList(encrypted)
 
-    decrypted = []
-    for num in intList:
-        decrypted.append(pow(num, d)%n)
+    decrypted = [pow(num, d, n) for num in intList]
     
-    if inputType == 'ascii':
+    if inputType == 'ascii' or 'hex':
         return intList2string(decrypted)
-    if inputType == 'image' or inputType == 'binary':
+    if inputType == 'image':
+        return binary2image(intList2binary(intList), 'output.bin')
+    if inputType == 'binary':
         return intList2binary(decrypted)
     return decrypted
 
-#17, 53, 77
-print(rsa_encrypt([4], 17, 77, 'int'))
-print(rsa_decrypt(rsa_encrypt([4], 17, 77, 'int'), 53, 77, 'int'))
+e, d, n = 3, 2799531, 4203469
 
-print(rsa_encrypt('hello world', 17, 77, 'ascii'))
-print(rsa_decrypt(rsa_encrypt('hello world', 17, 77, 'ascii'), 53, 77, 'ascii'))
-print(len(rsa_decrypt(rsa_encrypt('hello world', 17, 77, 'ascii'), 53, 77, 'ascii')))
-
-print(rsa_encrypt('mario.jpg', 163, 969, 'image')[:64])
+print(string2intlist('hello world'))
+print(rsa_decrypt(rsa_encrypt('hello world', e, n, 'ascii'), d, n, 'hex'))
