@@ -55,7 +55,6 @@ inv_const_matrix = [
     [0x0b, 0x0d, 0x09, 0x0e]
 
 ]
-
 def hex2Bin(hex_string):
 	
 	binary_string = bin(int(hex_string, 16)).lstrip('0b')
@@ -77,22 +76,23 @@ def image2binary(filename):
     with open(filename, 'rb') as fd:
         return ''.join([format(x, 'b') for x in fd.read()])
 
+def splitString(text, size=128):
+    text = [text[i:i+size] for i in range(0, len(text), size)]
+    if len(text[-1]) < size:
+        text[-1] += '0'*(size-len(text[-1]))
+    return text
+
 def s_box(word,box):
 	subbedWord = ()
-		
+
 	for i in range(4):
-		if len(word[i]) < 2:
-			word[i] = "0" + word[i]
-		#currWord = word[i].zfill(len(word[i]) + len(word[i]) % 2)
-
-
 		#using msb and lsb get the row and column in decimal form
 		if word[i][0].isdigit() == False:
 			row = ord(word[i][0]) - 86
 		else:
 			row = int(word[i][0])+1
 
-		#repeat above for the second char
+		#repeat above for the seoncd char
 		if word[i][1].isdigit() == False:
 			col = ord(word[i][1]) - 86
 		else:
@@ -106,12 +106,6 @@ def s_box(word,box):
 			new_val = '0' + new_val
 		subbedWord = (*subbedWord, new_val)
 	return "".join(subbedWord)
-	
-def splitString(text, size=128):
-    text = [text[i:i+size] for i in range(0, len(text), size)]
-    if len(text[-1]) < size:
-        text[-1] += '0'*(size-len(text[-1]))
-    return text
 
 def shift(curr_word):
     return curr_word[1:] + curr_word[:1]
@@ -152,19 +146,21 @@ def generate_words(given_key,size):
 			tmp = xor(subbed,hex(rcon)[2:])
 		xored_val = xor("".join(word),"".join(tmp))
 		words[i] = (xored_val[:2], xored_val[2:4], xored_val[4:6], xored_val[6:8])
-	
-	return words
 
-'''Functions for encryption'''
+	keys = []
+	keys = [words[i:i+4] for i in range(0, len(words), 4)]
+	return keys
+
 
 
 def initializeStateArr(plaintext,stateArr):
 	stateArr = [plaintext[i:i+4] for i in range(0, len(plaintext), 4)]
+
 	return stateArr
 	
 
 def xorStateArrCol(currState,word,col_num):
-	xored_col = xor("".join(currState[col_num]),"".join(word))
+	xored_col = xor("".join(word),"".join(currState[col_num]))
 	if len(xored_col) < 8:
 		xored_col = "0" + xored_col
 	
@@ -187,10 +183,12 @@ def shift_rows(currState):
 		for j in range(4):
 			row.append(currState[j][i])
 		rows.append(row)
+
 	for i,row in enumerate(rows):
 		for j in range(i):
 			row = shift(row)
 			rows[i] = row
+	
 	cols = []
 	for i in range(4):
 		col = []
@@ -198,23 +196,79 @@ def shift_rows(currState):
 			col.append(rows[j][i])
 		cols.append(col)
 	return rows
-
+	
 def shift_rows_right(currState):
-    # Transpose the current state to convert columns to rows
-    rows = [[currState[j][i] for j in range(4)] for i in range(4)]
-    
-    # Shift each row to the right
-    shifted_rows = []
+    rows = []
+    for i in range(4):
+        row = []
+        for j in range(4):
+            row.append(currState[j][i])
+        rows.append(row)
+
     for i, row in enumerate(rows):
-        shifted_row = shift_right(row)
-        shifted_rows.append(shifted_row)
-    
-    # Transpose the shifted rows back to columns
-    cols = [[shifted_rows[j][i] for j in range(4)] for i in range(4)]
-    
+        for j in range(i):
+            row = shift_right(row)
+            rows[i] = row
+    cols = []
+    for i in range(4):
+        col = []
+        for j in range(4):
+            col.append(rows[j][i])
+        cols.append(col)
     return cols
+xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
+
+def hex_to_int(val):
+    return int(val, 16)
+
+def int_to_hex(val):
+    return hex(val)[2:].zfill(2)
+
+def mix_single_column(a):
+    # see Sec 4.1.2 in The Design of Rijndael
+    t = hex_to_int(a[0]) ^ hex_to_int(a[1]) ^ hex_to_int(a[2]) ^ hex_to_int(a[3])
+    u = hex_to_int(a[0])
+    a[0] = int_to_hex(t ^ xtime(hex_to_int(a[0]) ^ hex_to_int(a[1])))
+    a[1] = int_to_hex(t ^ xtime(hex_to_int(a[1]) ^ hex_to_int(a[2])))
+    a[2] = int_to_hex(t ^ xtime(hex_to_int(a[2]) ^ hex_to_int(a[3])))
+    a[3] = int_to_hex(t ^ xtime(hex_to_int(a[3]) ^ u))
+
+def mix_columns(s):
+    for i in range(4):
+        mix_single_column(s[i])
+
+def inv_mix_columns(s):
+    for i in range(4):
+        u = gMult_two(hex_to_int(s[i][0]), 0x0e) ^ gMult_two(hex_to_int(s[i][1]), 0x0b) ^ gMult_two(hex_to_int(s[i][2]), 0x0d) ^ gMult_two(hex_to_int(s[i][3]), 0x09)
+        v = gMult_two(hex_to_int(s[i][0]), 0x09) ^ gMult_two(hex_to_int(s[i][1]), 0x0e) ^ gMult_two(hex_to_int(s[i][2]), 0x0b) ^ gMult_two(hex_to_int(s[i][3]), 0x0d)
+        w = gMult_two(hex_to_int(s[i][0]), 0x0d) ^ gMult_two(hex_to_int(s[i][1]), 0x09) ^ gMult_two(hex_to_int(s[i][2]), 0x0e) ^ gMult_two(hex_to_int(s[i][3]), 0x0b)
+        x = gMult_two(hex_to_int(s[i][0]), 0x0b) ^ gMult_two(hex_to_int(s[i][1]), 0x0d) ^ gMult_two(hex_to_int(s[i][2]), 0x09) ^ gMult_two(hex_to_int(s[i][3]), 0x0e)
+        s[i][0] = int_to_hex(u)
+        s[i][1] = int_to_hex(v)
+        s[i][2] = int_to_hex(w)
+        s[i][3] = int_to_hex(x)
+
+    return s
+def gMult(num, mult):
+    if mult == 0x01:
+        return num
+    elif mult == 0x02:
+        result = num << 1
+        if num & 0x80:  # If MSB is 1, then it will overflow after left shift
+            result ^= 0x1b  # XOR with the irreducible polynomial x^8 + x^4 + x^3 + x + 1
+        return result & 0xFF  # Ensure only 8 bits
+    elif mult == 0x03:
+        return gMult(num, 0x02) ^ num
+    elif mult == 0x09:
+        return gMult(gMult(gMult(num, 0x02), 0x02), 0x02) ^ num
+    elif mult == 0x0b:
+        return gMult(gMult(gMult(num, 0x02), 0x02) ^ num, 0x02) ^ num
+    elif mult == 0x0d:
+        return gMult(gMult(gMult(num, 0x02) ^ num, 0x02), 0x02) ^ num
+    elif mult == 0x0e:
+        return gMult(gMult(gMult(num, 0x02) ^ num, 0x02) ^ num, 0x02)
 		
-def gMult(num,mult):
+def gMult_two(num,mult):
 	binNum = format(num, '08b')
 	if mult == 0x01:
 		return num
@@ -268,8 +322,17 @@ def mix(currState):
 			for k in range(0,4):
 				newState[k][j] =  "0x{:02x}".format(newCol[k])
 	return newState
-
 def invMix(currState):
+    newState = [[0] * 4 for _ in range(4)]  # Initialize the new state with zeros
+    
+    for j in range(4):
+        for row in range(4):
+            for col in range(4):
+                newState[row][j] ^= gMult(int(currState[col][j], 16), inv_const_matrix[row][col])
+    hex_strings = [[hex(val)[2:].zfill(2) for val in sublist] for sublist in newState]
+    return hex_strings
+
+def invMix_two(currState):
     newState = []
 
     for i in range(4):
@@ -298,7 +361,7 @@ def rowsToCols(currState):
 		cols.append(col)
 	return cols
 
-def encrypt(key,ciphertext,inputType='binary'):
+def decrypt(key,ciphertext,inputType='binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
 	if inputType == 'ascii':
@@ -307,71 +370,55 @@ def encrypt(key,ciphertext,inputType='binary'):
 		binary = image2binary(ciphertext)
 	if len(binary) > 64:
 		binary = splitString(binary)
-	encrypted = ""
+	decrypted = ""
 	for b in binary:
 		plaintext_hex = bin2Hex(b)
-		#print(plaintext_hex)
 		plaintextArr = [plaintext_hex[i:i+2] for i in range(0, len(plaintext_hex), 2)]
-		#print(plaintext_hexArr)
 		keyArr = [key[i:i+2] for i in range(0, len(key), 2)]
 
-		words = generate_words(keyArr,44)
-		#print(f"WORDS\n\n{words}")
+		keys = generate_words(keyArr,44)
 		currState = []
-		#print("ENCRYPTING....\n\n")
 		stateArr = initializeStateArr(plaintextArr,currState)
-		#print(stateArr)
-		for round in range(10):
-			#print(f"--------ROUND {round}----------\n")
-			#print(f"input\n {stateArr}")
-			if (round == 0): 
-				for i in range(4):
-					stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-				#print(f"after xor {stateArr}")
-			
-			''' sub columns'''
-			stateArr = sub_cols(currState=stateArr,box=S_BOX)
-			#print(f"State arr after sub:\n {stateArr}")
-
-			stateArr = shift_rows(currState=stateArr)
-			#print(f"state arr after shift:\n {stateArr}")
-
-			if (round <9):
-				#print("post mixing?")
-				stateArr = mix(currState=stateArr)
-				#print(stateArr)
-			stateArr = rowsToCols(stateArr)	
-			
+	
+		for i in range(4):
+			stateArr = xorStateArrCol(stateArr,keys[-1][i],i)
+		for r in range(9,0,-1):
+			stateArr = shift_rows_right(currState=stateArr)
+			stateArr = sub_cols(stateArr,INV_S_BOX)
 			for i in range(4):
-				stateArr = xorStateArrCol(stateArr,words[i+4*(round+1)],i)
-			#print(f"after xor \n{stateArr}")
+				stateArr = xorStateArrCol(stateArr,keys[r][i],i)
+			stateArr = inv_mix_columns(stateArr)	
+			
+		stateArr = shift_rows_right(stateArr)
+		stateArr = sub_cols(stateArr,INV_S_BOX)
+		for i in range(4):
+			stateArr = xorStateArrCol(stateArr,keys[0][i],i)
 
-		b_encrypt = ""
+			
+
+
+		b_decrypt = ""
 		for col in stateArr:
 			for item in col:
-				b_encrypt = b_encrypt + item
-		encrypted = encrypted + b_encrypt
-		
-	return hex2Bin(encrypted)
+				b_decrypt = b_decrypt + item
+		decrypted = decrypted + b_decrypt
+	return hex2Bin(decrypted)
 
+		
+		
+		
 
 
 
 def main():
 
-	key = "01010100011010000110000101110100011100110010000001101101011110010010000001001011011101010110111001100111001000000100011001110101"
+	#key = "5468617473206d79204b756e67204675"
+	#cipher_text = "29c3505f571420f6402299b31a02d73a"
+	key = "00101011011111100001010100010110001010001010111011010010101001101010101111110111000101011000100000001001110011110100111100111100"
+	cipher_bin = "00111001001001011000010000011101000000101101110000001001111110111101110000010001100001011001011100011001011010100000101100110010"
+	stateArr = decrypt(key,cipher_bin,inputType='binary')
 
-	binary_str = "01010100011101110110111100100000010011110110111001100101001000000100111001101001011011100110010100100000010101000111011101101111"
 
-	
-	stateArr = encrypt(key,'taylor.jpeg','image')
-
-	stateArr = encrypt(key,binary_str,'binary')
-	
-	
-	
-	
-	
 
 if __name__ == '__main__':
 	main()
