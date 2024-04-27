@@ -79,7 +79,6 @@ def rsa_decrypt(encrypted, d, n, inputType='binary'):
         return intList2binary(decrypted)
     return decrypted
 
-e, d, n = 3, 2799531, 4203469
-
-print(string2intlist('hello world'))
-print(rsa_decrypt(rsa_encrypt('hello world', e, n, 'ascii'), d, n, 'hex'))
+def test():
+    e, d, n = 3, 2799531, 4203469
+    print(rsa_decrypt(rsa_encrypt('hello world', e, n, 'ascii'), d, n, 'hex'))
