@@ -257,7 +257,7 @@ def tripleEncode(k1, k2, k3, plaintext, inputType='Binary'):
 
     if inputType == 'Text':
         binary = string2binary(plaintext)
-    if inputType == 'Image':
+    if inputType == 'File':
         binary = image2binary(plaintext)
 
     if len(binary) > 64:
@@ -281,7 +281,7 @@ def tripleDecode(k1, k2, k3, ciphertext, inputType='Binary'):
     
     if inputType == 'Text':
         binary = string2binary(ciphertext)
-    if inputType == 'Image':
+    if inputType == 'File':
         binary = image2binary(ciphertext)
 
     if len(binary) > 64:
