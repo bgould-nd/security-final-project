@@ -298,7 +298,7 @@ def rowsToCols(currState):
 		cols.append(col)
 	return cols
 
-def encrypt(key,ciphertext,inputType='binary'):
+def aes_encrypt(key,ciphertext,inputType='binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
 	if inputType == 'ascii':
