@@ -361,12 +361,12 @@ def rowsToCols(currState):
 		cols.append(col)
 	return cols
 
-def decrypt(key,ciphertext,inputType='binary'):
+def aes_decrypt(key,ciphertext,inputType='Binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
-	if inputType == 'ascii':
+	if inputType == 'Text':
 		binary = string2binary(ciphertext)
-	if inputType == 'image':
+	if inputType == 'File':
 		binary = image2binary(ciphertext)
 	if len(binary) > 64:
 		binary = splitString(binary)
@@ -416,7 +416,7 @@ def main():
 	#cipher_text = "29c3505f571420f6402299b31a02d73a"
 	key = "00101011011111100001010100010110001010001010111011010010101001101010101111110111000101011000100000001001110011110100111100111100"
 	cipher_bin = "00111001001001011000010000011101000000101101110000001001111110111101110000010001100001011001011100011001011010100000101100110010"
-	stateArr = decrypt(key,cipher_bin,inputType='binary')
+	stateArr = aes_decrypt(key,cipher_bin,inputType='binary')
 
 
 
