@@ -12,6 +12,22 @@ def int2bytes(i: int) -> bytes:
 def xor(a, b):
     return [int(a1) ^ int(b1) for a1, b1 in zip(a, b)]
 
+def string2binary(text):
+    return ''.join(format(ord(i), '08b') for i in text)
+
+def binary2string(bin):
+    return "".join([chr(int(bin[i:i+8],2)) for i in range(0,len(bin),8)])
+
+def splitString(text, size=64):
+    text = [text[i:i+size] for i in range(0, len(text), size)]
+    if len(text[-1]) < size:
+        text[-1] += '0'*(size-len(text[-1]))
+    return text
+
+def image2binary(filename):
+    with open(filename, 'rb') as fd:
+        return ''.join([format(x, 'b') for x in fd.read()])
+
 def generateKeys(key):
 
     pc1 = [57, 49, 41, 33, 25, 17, 9,
@@ -99,7 +115,7 @@ def encode(key, plaintext):
     rl = r0 + l0
     rlP = [rl[i-1] for i in ipInv]
 
-    return rlP
+    return ''.join([str(i) for i in rlP])
 
 def decode(key, ciphertext):
 
@@ -152,7 +168,7 @@ def decode(key, ciphertext):
 
     rl = r0 + l0
     rlP = [rl[i-1] for i in ipInv]
-    return rlP
+    return ''.join([str(i) for i in rlP])
 
 def f(input, l):
 
@@ -228,23 +244,75 @@ def f(input, l):
     output = xor(sP, l)
     return output
 
-def tripleEncode(k1, k2, k3, plaintext):
-    return encode(k3, decode(k2, encode(k1, plaintext)))
+def tripleEncode(k1, k2, k3, plaintext, inputType='Binary'):
 
-def tripleDecode(k1, k2, k3, ciphertext):
-    return decode(k1, encode(k2, decode(k3, ciphertext)))
+    binary = plaintext
+
+    if inputType == 'Text':
+        binary = string2binary(plaintext)
+    if inputType == 'Image':
+        binary = image2binary(plaintext)
+
+    if len(binary) > 64:
+        binary = splitString(binary)
+    else:
+        binary = [binary]
+
+    encodedBinary = ''
+    for b in binary:
+        curr = encode(k3, decode(k2, encode(k1, b)))
+        encodedBinary += curr
+
+    if inputType == 'Text':
+        return binary2string(encodedBinary)
+    
+    return encodedBinary
+
+def tripleDecode(k1, k2, k3, ciphertext, inputType='Binary'):
+
+    binary = ciphertext
+    
+    if inputType == 'Text':
+        binary = string2binary(ciphertext)
+    if inputType == 'Image':
+        binary = image2binary(ciphertext)
+
+    if len(binary) > 64:
+        binary = splitString(binary)
+    else:
+        binary = [binary]
+    
+    decodedBinary = ''
+    for b in binary:
+        curr = decode(k1, encode(k2, decode(k3, b)))
+        decodedBinary += curr
+
+    if inputType == 'Text':
+        return binary2string(decodedBinary)
+    
+    return decodedBinary
 
 if __name__ == '__main__':
-    ciphertext = '1100101011101101101000100110010101011111101101110011100001110011'
-    key        = '0100110001001111010101100100010101000011010100110100111001000100'
 
-    k1 = '0100110001001111010101100100010101000011010100110100111001000100'
-    k2 = '0100110001001111010101100100010101000011010100110100111001000111'
-    k3 = '1000110001001111010101100100010101000011010100110100111001000100'
+    k1       = '0100110001001111010101100100010101000011010100110100111001000100'
+    k2       = '0100110001001111010101100100010101000011010100110100111001000111'
+    k3       = '1000110001001111010101100100010101000011010100110100111001000100'
 
-    binary = tripleDecode(k1, k2, k3, ciphertext)
-    encoded = tripleEncode(k1, k2, k3, binary)
-    encoded = ''.join([str(i) for i in encoded])
-    print(encoded)
-    print(ciphertext)
-    print(ciphertext == encoded)
+    plaintext = '11001010111011011010001001100101010111111011011100111000011100111111'
+
+    ascii_plaintext = 'hello world'
+
+    encoded = tripleEncode(k1, k2, k3, plaintext, inputType='binary')
+    decoded = tripleDecode(k1, k2, k3, encoded, inputType='binary')
+    print(decoded)
+    print(plaintext)
+
+    ascii_encoded = tripleEncode(k1, k2, k3, ascii_plaintext, inputType='ascii')
+    ascii_decoded = tripleDecode(k1, k2, k3, ascii_encoded, inputType='ascii')
+    print(ascii_decoded)
+    print(ascii_plaintext)
+
+    image_encoded = tripleEncode(k1, k2, k3, 'mario.jpg', inputType='image')
+    image_decoded = tripleDecode(k1, k2, k3, image_encoded, inputType='binary')
+    print(image_decoded[:64])
+    print(image2binary('mario.jpg')[:64])
