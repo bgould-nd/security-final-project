@@ -28,6 +28,12 @@ def image2binary(filename):
     with open(filename, 'rb') as fd:
         return ''.join([format(x, 'b') for x in fd.read()])
 
+    
+def binary2image(bin, filename):
+    with open(filename, 'wb') as fd:
+        fd.write(bytearray(bin, 'ascii'))
+    return
+
 def generateKeys(key):
 
     pc1 = [57, 49, 41, 33, 25, 17, 9,
@@ -244,6 +250,7 @@ def f(input, l):
     output = xor(sP, l)
     return output
 
+
 def tripleEncode(k1, k2, k3, plaintext, inputType='Binary'):
 
     binary = plaintext
@@ -313,6 +320,6 @@ if __name__ == '__main__':
     print(ascii_plaintext)
 
     image_encoded = tripleEncode(k1, k2, k3, 'mario.jpg', inputType='image')
-    image_decoded = tripleDecode(k1, k2, k3, image_encoded, inputType='binary')
-    print(image_decoded[:64])
-    print(image2binary('mario.jpg')[:64])
+
+    image_decoded = tripleDecode(k1, k2, k3, 'encrypted.bin', inputType='image')
+
