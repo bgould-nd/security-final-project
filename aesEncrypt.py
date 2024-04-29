@@ -1,5 +1,5 @@
 import os
-import numpy as np 
+
 S_BOX =  [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
 		0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
 		0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -301,9 +301,9 @@ def rowsToCols(currState):
 def aes_encrypt(key,ciphertext,inputType='binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
-	if inputType == 'ascii':
+	if inputType == 'Text':
 		binary = string2binary(ciphertext)
-	if inputType == 'image':
+	if inputType == 'File':
 		binary = image2binary(ciphertext)
 	if len(binary) > 64:
 		binary = splitString(binary)
@@ -353,7 +353,7 @@ def main():
 	key = "00101011011111100001010100010110001010001010111011010010101001101010101111110111000101011000100000001001110011110100111100111100"
 
 	
-	stateArr = aes_encrypt(key,'rory.jpeg','image')
+	stateArr = aes_encrypt(key,'/Users/jennaszydlowski/Desktop/taylor.jpeg','file')
 
 	stateArr = aes_encrypt(key,binary_str,'binary')
 
