@@ -30,26 +30,26 @@ def binary2image(bin, filename):
     return
 
 #Encrypting function using public key (e,n) and private key d, and plaintext plain, plain is received as an array of numbers, each number represents a character in the plaintext message, returns an array
-def rsa_encrypt(plain, e, n, inputType='binary'):
+def rsa_encrypt(plain, e, n, inputType='Binary'):
     
     intList = plain
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         intList = string2intlist(plain)
-    if inputType == 'image':
+    if inputType == 'File':
         intList = binary2intList(image2binary(plain))
-    if inputType == 'binary':
+    if inputType == 'Binary':
         intList = binary2intList(plain)
     if inputType == 'hex':
         intList = hex2intList(plain)
 
     encrypted = [pow(num, e, n) for num in intList]
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         return intList2hex(encrypted)
-    if inputType == 'image':
+    if inputType == 'File':
         intList = binary2intList(image2binary(encrypted))
-    if inputType == 'binary':
+    if inputType == 'Binary':
         intList = binary2intList(encrypted)
     if inputType == 'hex':
         intList = intList2hex(encrypted)
@@ -60,22 +60,22 @@ def rsa_decrypt(encrypted, d, n, inputType='binary'):
     
     intList = encrypted
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         intList = string2intlist(encrypted)
-    if inputType == 'image':
+    if inputType == 'File':
         intList = binary2intList(image2binary(encrypted))
-    if inputType == 'binary':
+    if inputType == 'Binary':
         intList = binary2intList(encrypted)
     if inputType == 'hex':
         intList = hex2intList(encrypted)
 
     decrypted = [pow(num, d, n) for num in intList]
     
-    if inputType == 'ascii' or 'hex':
+    if inputType == 'Text' or 'hex':
         return intList2string(decrypted)
-    if inputType == 'image':
+    if inputType == 'File':
         return binary2image(intList2binary(intList), 'output.bin')
-    if inputType == 'binary':
+    if inputType == 'Binary':
         return intList2binary(decrypted)
     return decrypted
 
