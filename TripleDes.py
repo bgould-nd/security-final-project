@@ -27,6 +27,7 @@ def splitString(text, size=64):
 def image2binary(filename):
     with open(filename, 'rb') as fd:
         return ''.join([format(x, 'b') for x in fd.read()])
+
     
 def binary2image(bin, filename):
     with open(filename, 'wb') as fd:
@@ -249,13 +250,14 @@ def f(input, l):
     output = xor(sP, l)
     return output
 
-def tripleEncode(k1, k2, k3, plaintext, inputType='binary'):
+
+def tripleEncode(k1, k2, k3, plaintext, inputType='Binary'):
 
     binary = plaintext
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         binary = string2binary(plaintext)
-    if inputType == 'image':
+    if inputType == 'Image':
         binary = image2binary(plaintext)
 
     if len(binary) > 64:
@@ -268,19 +270,18 @@ def tripleEncode(k1, k2, k3, plaintext, inputType='binary'):
         curr = encode(k3, decode(k2, encode(k1, b)))
         encodedBinary += curr
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         return binary2string(encodedBinary)
-    if inputType == 'image':
-        return binary2image(encodedBinary, 'encrypted.bin')
+    
     return encodedBinary
 
-def tripleDecode(k1, k2, k3, ciphertext, inputType='binary'):
+def tripleDecode(k1, k2, k3, ciphertext, inputType='Binary'):
 
     binary = ciphertext
     
-    if inputType == 'ascii':
+    if inputType == 'Text':
         binary = string2binary(ciphertext)
-    if inputType == 'image':
+    if inputType == 'Image':
         binary = image2binary(ciphertext)
 
     if len(binary) > 64:
@@ -293,14 +294,12 @@ def tripleDecode(k1, k2, k3, ciphertext, inputType='binary'):
         curr = decode(k1, encode(k2, decode(k3, b)))
         decodedBinary += curr
 
-    if inputType == 'ascii':
+    if inputType == 'Text':
         return binary2string(decodedBinary)
-    if inputType == 'image':
-        return binary2image(decodedBinary, 'decrypted.bin')
     
     return decodedBinary
 
-def test():
+if __name__ == '__main__':
 
     k1       = '0100110001001111010101100100010101000011010100110100111001000100'
     k2       = '0100110001001111010101100100010101000011010100110100111001000111'
@@ -321,4 +320,6 @@ def test():
     print(ascii_plaintext)
 
     image_encoded = tripleEncode(k1, k2, k3, 'mario.jpg', inputType='image')
+
     image_decoded = tripleDecode(k1, k2, k3, 'encrypted.bin', inputType='image')
+

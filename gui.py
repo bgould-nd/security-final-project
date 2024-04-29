@@ -7,23 +7,26 @@ from TripleDes import tripleEncode, tripleDecode
 def UploadAction(event=None):
     filename = filedialog.askopenfilename()
     print('Selected:', filename)
+    input_entry.insert(0, str(filename))
+    
 
-def rsa_encrypt(plain, e, n):
-    encrypted = []
-    for num in plain: 
-        encrypted.append(str(int(num)**e%n))
+#def rsa_encrypt(plain, e, n):
+#    encrypted = []
+ #   for num in plain: 
+  #      encrypted.append(str(int(num)**e%n))
 
-    return("".join(encrypted))
+    #return("".join(encrypted))
 
 
 def update_ui(*args):
     # change available options based on selection
-    if selected_input.get() == "Text":
+    if selected_input.get() == "Text" or selected_input.get() == "Binary":
         input_entry.grid(row=0,column=1 ,padx=5,pady=5)
         open_file_button.grid_forget()
     else:
         open_file_button.grid(row=0, column=1, padx=5, pady=5)
         input_entry.grid_forget()
+        input_entry.grid(row=10, column=1, padx=5, pady=5)
     
     if selected_option.get() == "RSA" and selected_mode.get() == "Encrypt":
         e_label.grid(row=1,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
@@ -46,6 +49,7 @@ def update_ui(*args):
     if selected_option.get() == "Vigenere":
         vin_label.grid(row=1,column=0)
         vin_entry.grid(row=1,column=1)
+        selected_input.set("Text")
     else:
         vin_label.grid_forget()
         vin_entry.grid_forget()
@@ -75,6 +79,14 @@ def update_ui(*args):
 
 def encrypt():
     #get input text entry
+    #if selected_input.get() == "Image":
+
+    #    if not filename:
+     #       output_entry.delete(0, tk.END)
+      #      output_entry.insert(0, "Image not found!")
+       # else:
+        #    input_text = filename
+    #else:
     input_text = input_entry.get().strip()
     
     #process based on selection
@@ -115,10 +127,11 @@ def encrypt():
             output_entry.insert(0, "must enter n value")
             return
         
-        if selected_mode.get() == "Encrypt":
-            output_text = rsa_encrypt(input_text, e_value, n_value)
+        #if selected_mode.get() == "Encrypt":
+            #output_text = rsa_encrypt(input_text, e_value, n_value, selected_input.get())
         #else:
-         #   output_text = rsa_decrypt(input_text, d_value, n_value)
+            #output_text = rsa_decrypt(input_text, d_value, n_value, selected_input.get())
+
     
     if selected_option.get() == "3DES":
         try:
@@ -130,10 +143,11 @@ def encrypt():
             output_entry.insert(0, "must enter all keys")
             return
         if selected_mode.get() == "Decrypt":
-            output_text = tripleDecode(key1, key2, key3, input_text)
+            output_text = tripleDecode(key1, key2, key3, input_text, selected_input.get())
         else:
-            output_text = tripleEncode(key1, key2, key3, input_text)
+            output_text = tripleEncode(key1, key2, key3, input_text, selected_input.get())
             
+    
     output_entry.delete(0, tk.END)
     output_entry.insert(0, output_text)
         
@@ -151,7 +165,7 @@ root.config(bg="skyblue", padx=10,pady=10)
 selected_input = tk.StringVar(root)
 selected_input.set("Text") 
 selected_input.trace("w", update_ui) 
-input_menu = tk.OptionMenu(root, selected_input, "Text", "File")
+input_menu = tk.OptionMenu(root, selected_input, "Text", "Image", "Binary")
 input_menu.grid(row=0, column=0 ,padx=5,pady=5)
 
 #text entry
