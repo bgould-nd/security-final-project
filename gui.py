@@ -3,6 +3,8 @@ from tkinter import filedialog
 from vigenere import vin_encrypt, vin_decrypt
 from TripleDes import tripleEncode, tripleDecode
 from rsa import rsa_decrypt, rsa_encrypt
+from aesDecrypt import aes_decrypt
+from aesEncrypt import aes_encrypt
 
 def UploadAction(event=None):
     input_entry.delete(0, tk.END)
@@ -136,6 +138,21 @@ def encrypt():
             output_text = tripleDecode(key1, key2, key3, input_text,selected_input.get())
         else:
             output_text = tripleEncode(key1, key2, key3, input_text,selected_input.get())
+    
+    if selected_option.get() == "AES":
+        try:
+            aes_key = aes_entry.get()
+        except ValueError:
+            output_entry.delete(0, tk.END)
+            output_entry.insert(0, "must enter key")
+            return
+        
+        if selected_mode.get() == "Decrypt":
+            output_text = aes_decrypt(aes_key,input_text,selected_input.get())
+        else:
+            output_text = aes_encrypt(aes_key,input_text,selected_input.get())
+            
+    
             
     output_entry.delete(0, tk.END)
     output_entry.insert(0, output_text)

@@ -298,12 +298,12 @@ def rowsToCols(currState):
 		cols.append(col)
 	return cols
 
-def encrypt(key,ciphertext,inputType='binary'):
+def aes_encrypt(key,ciphertext,inputType='Binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
-	if inputType == 'ascii':
+	if inputType == 'Text':
 		binary = string2binary(ciphertext)
-	if inputType == 'image':
+	if inputType == 'File':
 		binary = image2binary(ciphertext)
 	if len(binary) > 64:
 		binary = splitString(binary)
@@ -355,7 +355,7 @@ def main():
 	
 	#stateArr = encrypt(key,'taylor.jpeg','image')
 
-	stateArr = encrypt(key,binary_str,'binary')
+	stateArr = aes_encrypt(key,binary_str,'binary')
 
 	
 	
