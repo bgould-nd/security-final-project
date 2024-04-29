@@ -298,12 +298,12 @@ def rowsToCols(currState):
 		cols.append(col)
 	return cols
 
-def aes_encrypt(key,ciphertext,inputType='Binary'):
+def encrypt(key,ciphertext,inputType='binary'):
 	key = bin2Hex(key)
 	binary = ciphertext
-	if inputType == 'Text':
+	if inputType == 'ascii':
 		binary = string2binary(ciphertext)
-	if inputType == 'File':
+	if inputType == 'image':
 		binary = image2binary(ciphertext)
 	if len(binary) > 64:
 		binary = splitString(binary)
@@ -316,12 +316,12 @@ def aes_encrypt(key,ciphertext,inputType='Binary'):
 		words = generate_words(keyArr,44)
 		currState = []
 		stateArr = initializeStateArr(plaintextArr,currState)
-		print(stateArr)
+		#print(stateArr)
 		for round in range(10):
 			if (round == 0): 
 				for i in range(4):
 					stateArr = xorStateArrCol(stateArr,words[i+4*round],i)
-				print(f"after xor {stateArr}")
+				#print(f"after xor {stateArr}")
 
 			
 			''' sub columns'''
@@ -353,9 +353,9 @@ def main():
 	key = "00101011011111100001010100010110001010001010111011010010101001101010101111110111000101011000100000001001110011110100111100111100"
 
 	
-	#stateArr = encrypt(key,'taylor.jpeg','image')
+	stateArr = encrypt(key,'rory.jpeg','image')
 
-	stateArr = aes_encrypt(key,binary_str,'binary')
+	stateArr = encrypt(key,binary_str,'binary')
 
 	
 	
