@@ -10,11 +10,11 @@ def UploadAction(event=None):
     input_entry.delete(0, tk.END)
     filename = filedialog.askopenfilename()
     print('Selected:', filename)
-    input_entry.grid(row=5,column=1)
+    input_entry.grid(row=0,column=1)
     input_entry.insert(0, filename)
 
 def save_data_to_file(data): 
-    filename = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+    filename = filedialog.asksaveasfilename(defaultextension=".bin", filetypes=[("bin files", "*.bin")])
     if filename:
         with open(filename, "w") as file:
             file.write(data)
@@ -26,19 +26,19 @@ def update_ui(*args):
         input_entry.grid(row=0,column=1 ,padx=5,pady=5)
         open_file_button.grid_forget()
     else:
-        open_file_button.grid(row=0, column=1, padx=5, pady=5)
-        input_entry.grid_forget()
+        open_file_button.grid(row=1, column=0, padx=5, pady=5)
+        #input_entry.grid_forget()
     
     if selected_option.get() == "RSA" and selected_mode.get() == "Encrypt":
-        e_label.grid(row=1,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
-        e_entry.grid(row=1,column=1)                        #pack(side=tk.LEFT, padx=(0, 10))
-        n_label.grid(row=2,column=0)                        #pack(side=tk.LEFT, padx=(10, 0))
-        n_entry.grid(row=2,column=1)
+        e_label.grid(row=2,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
+        e_entry.grid(row=2,column=1)                        #pack(side=tk.LEFT, padx=(0, 10))
+        n_label.grid(row=3,column=0)                        #pack(side=tk.LEFT, padx=(10, 0))
+        n_entry.grid(row=3,column=1)
     elif selected_option.get() == "RSA" and selected_mode.get() == "Decrypt": #                       pack(side=tk.LEFT, padx=(0, 10))
-        d_label.grid(row=1,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
-        d_entry.grid(row=1,column=1)                        #pack(side=tk.LEFT, padx=(0, 10))
-        n_label.grid(row=2,column=0)                        #pack(side=tk.LEFT, padx=(10, 0))
-        n_entry.grid(row=2,column=1)
+        d_label.grid(row=2,column=0)        #pack(side=tk.LEFT , padx=(10, 0))
+        d_entry.grid(row=2,column=1)                        #pack(side=tk.LEFT, padx=(0, 10))
+        n_label.grid(row=3,column=0)                        #pack(side=tk.LEFT, padx=(10, 0))
+        n_entry.grid(row=3,column=1)
     else:
         e_label.grid_forget()
         e_entry.grid_forget()
@@ -48,20 +48,20 @@ def update_ui(*args):
         d_entry.grid_forget()
         
     if selected_option.get() == "Vigenere":
-        vin_label.grid(row=1,column=0)
-        vin_entry.grid(row=1,column=1)
+        vin_label.grid(row=2,column=0)
+        vin_entry.grid(row=2,column=1)
         selected_input.set("Text")
     else:
         vin_label.grid_forget()
         vin_entry.grid_forget()
         
     if selected_option.get() == "3DES":
-        des_label1.grid(row=1,column=0)
-        des_entry1.grid(row=1,column=1)
-        des_label2.grid(row=2,column=0)
-        des_entry2.grid(row=2,column=1)
-        des_label3.grid(row=3,column=0)
-        des_entry3.grid(row=3,column=1)
+        des_label1.grid(row=2,column=0)
+        des_entry1.grid(row=2,column=1)
+        des_label2.grid(row=3,column=0)
+        des_entry2.grid(row=3,column=1)
+        des_label3.grid(row=4,column=0)
+        des_entry3.grid(row=4,column=1)
     else:
         des_label1.grid_forget()
         des_entry1.grid_forget()
@@ -71,8 +71,8 @@ def update_ui(*args):
         des_entry3.grid_forget()
 
     if selected_option.get() == "AES":
-        aes_label.grid(row=1,column=0)
-        aes_entry.grid(row=1,column=1)
+        aes_label.grid(row=2,column=0)
+        aes_entry.grid(row=2,column=1)
     else:
         aes_label.grid_forget()
         aes_entry.grid_forget()
