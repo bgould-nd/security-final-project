@@ -353,9 +353,9 @@ def main():
 	key = "00101011011111100001010100010110001010001010111011010010101001101010101111110111000101011000100000001001110011110100111100111100"
 
 	
-	stateArr = encrypt(key,'rory.jpeg','image')
+	stateArr = aes_encrypt(key,'rory.jpeg','image')
 
-	stateArr = encrypt(key,binary_str,'binary')
+	stateArr = aes_encrypt(key,binary_str,'binary')
 
 	
 	
