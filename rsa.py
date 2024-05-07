@@ -48,15 +48,16 @@ def rsa_encrypt(plain, e, n, inputType='Binary'):
     if inputType == 'Text':
         return intList2hex(encrypted)
     if inputType == 'File':
-        intList = binary2intList(image2binary(encrypted))
+        binary2image(intList2binary(encrypted))
+        return
     if inputType == 'Binary':
-        intList = binary2intList(encrypted)
+        return intList2binary(encrypted)
     if inputType == 'hex':
-        intList = intList2hex(encrypted)
+        return intList2hex(encrypted)
     return encrypted
     
 #Decrypting function using public key (e,n) and private key d and encrypted text encrypted. Encrypted is an array of numbers, each number represents a character in the encrypted message, returns an array of decrypted message.
-def rsa_decrypt(encrypted, d, n, inputType='binary'):
+def rsa_decrypt(encrypted, d, n, inputType='Binary'):
     
     intList = encrypted
 
@@ -71,7 +72,7 @@ def rsa_decrypt(encrypted, d, n, inputType='binary'):
 
     decrypted = [pow(num, d, n) for num in intList]
     
-    if inputType == 'Text' or 'hex':
+    if inputType == 'Text' or inputType == 'hex':
         return intList2string(decrypted)
     if inputType == 'File':
         return binary2image(intList2binary(intList), 'output.bin')

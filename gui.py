@@ -208,7 +208,7 @@ n_entry = tk.Entry(root, width=3)
 
 
 
-vin_label = tk.Label(root, text ="Vinegere Key",font =("Helvetica", 16))
+vin_label = tk.Label(root, text ="Vigenere Key",font =("Helvetica", 16))
 vin_entry = tk.Entry(root, width = 10)
 
 des_label1 = tk.Label(root, text ="Key 1",font =("Helvetica", 16))
