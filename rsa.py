@@ -12,7 +12,9 @@ def hex2intList(hex):
     return [int(i, 16) for i in hex.split('\\x')[1:]]
 
 def intList2hex(intList):
-    return ''.join(['\\' + hex(i)[1:] for i in intList])
+    if all (i < 256 for i in intList):
+        return ''.join([chr(j) for j in intList])
+    return ''.join(['\\' + hex(j)[1:] for j in intList])
 
 def binary2intList(bin):
     return [int(bin[i:i+8],2) for i in range(0,len(bin),8)]
@@ -40,7 +42,7 @@ def rsa_encrypt(plain, e, n, inputType='Binary'):
         intList = binary2intList(image2binary(plain))
     if inputType == 'Binary':
         intList = binary2intList(plain)
-    if inputType == 'hex':
+    if inputType == 'Hex':
         intList = hex2intList(plain)
 
     encrypted = [pow(num, e, n) for num in intList]
@@ -48,11 +50,11 @@ def rsa_encrypt(plain, e, n, inputType='Binary'):
     if inputType == 'Text':
         return intList2hex(encrypted)
     if inputType == 'File':
-        binary2image(intList2binary(encrypted))
+        binary2image(intList2binary(encrypted), 'output.bin')
         return
     if inputType == 'Binary':
         return intList2binary(encrypted)
-    if inputType == 'hex':
+    if inputType == 'Hex':
         return intList2hex(encrypted)
     return encrypted
     
@@ -67,13 +69,13 @@ def rsa_decrypt(encrypted, d, n, inputType='Binary'):
         intList = binary2intList(image2binary(encrypted))
     if inputType == 'Binary':
         intList = binary2intList(encrypted)
-    if inputType == 'hex':
+    if inputType == 'Hex':
         intList = hex2intList(encrypted)
 
     decrypted = [pow(num, d, n) for num in intList]
     
-    if inputType == 'Text' or inputType == 'hex':
-        return intList2string(decrypted)
+    if inputType == 'Text' or inputType == 'Hex':
+        return intList2hex(decrypted)
     if inputType == 'File':
         return binary2image(intList2binary(intList), 'output.bin')
     if inputType == 'Binary':
