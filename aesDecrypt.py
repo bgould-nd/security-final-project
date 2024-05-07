@@ -123,9 +123,8 @@ def xor(num_1, num_2):
 
 	new_hex = hex(xored)[2:]
 	
-	if len(new_hex) != 8:
+	while len(new_hex) != 8:
 		new_hex = '0' + new_hex
-		
 	return new_hex
 
 
