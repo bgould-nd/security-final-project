@@ -89,15 +89,15 @@ print(f"Running 3DES decrypt on input type text2 (length: 88) took {end_time - s
 
 print()
 
-#start_time = time.time()
-#result = aes_encrypt(aes_key, image1, inputType='File')
-#end_time = time.time()
-#print(f"Running aes encrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = aes_encrypt(aes_key, image1, inputType='File')
+end_time = time.time()
+print(f"Running aes encrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
 
-#start_time = time.time()
-#result = aes_encrypt(aes_key, image2, inputType='File')
-#end_time = time.time()
-#print(f"Running aes encrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = aes_encrypt(aes_key, image2, inputType='File')
+end_time = time.time()
+print(f"Running aes encrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
     
 start_time = time.time()
 result = aes_encrypt(aes_key, binary1, inputType='Binary')
@@ -121,15 +121,15 @@ print(f"Running aes encrypt on input type text2 (length: 88) took {end_time - st
 
 print()
 
-#start_time = time.time()
-#result = aes_decrypt(aes_key, image1, inputType='File')
-#end_time = time.time()
-#print(f"Running aes decrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = aes_decrypt(aes_key, image1, inputType='File')
+end_time = time.time()
+print(f"Running aes decrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
 
-#start_time = time.time()
-#result = aes_decrypt(aes_key, image1, image2, inputType='File')
-#end_time = time.time()
-#print(f"Running aes decrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = aes_decrypt(aes_key,image2, inputType='File')
+end_time = time.time()
+print(f"Running aes decrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
     
 start_time = time.time()
 result = aes_decrypt(aes_key, binary1, inputType='Binary')
@@ -164,15 +164,15 @@ print()
 #print(f"Running RSA Encrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
     
 
-#start_time = time.time()
-#result = rsa_encrypt(binary1, e, n,inputType='Binary')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type binary1 (64 bit) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_encrypt(binary1, e, n,inputType='Binary')
+end_time = time.time()
+print(f"Running RSA Encrypt on input type binary1 (64 bit) took {end_time - start_time:.6f} seconds")
 
-#start_time = time.time()
-#result = rsa_encrypt(binary2, e, n,inputType='Binary')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type binary1 (128 bit) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_encrypt(binary2, e, n,inputType='Binary')
+end_time = time.time()
+print(f"Running RSA Encrypt on input type binary1 (128 bit) took {end_time - start_time:.6f} seconds")
 
 start_time = time.time()
 result = rsa_encrypt(text1, e, n,inputType='Text')
@@ -186,36 +186,36 @@ print(f"Running RSA Encrypt on input type text2 (length: 88) took {end_time - st
 
 print()
 
-#start_time = time.time()
-#result = rsa_decrypt(image1, d, n, inputType='File')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_decrypt(image1, d, n, inputType='File')
+end_time = time.time()
+print(f"Running RSA Decrypt on input type file1 (66,000 bytes) took {end_time - start_time:.6f} seconds")
 
-#start_time = time.time()
-#result = rsa_decrypt(image2, d, n,inputType='File')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_decrypt(image2, d, n,inputType='File')
+end_time = time.time()
+print(f"Running RSA Decrypt on input type file2 (5,800 bytes) took {end_time - start_time:.6f} seconds")
     
 
-#start_time = time.time()
-#result = rsa_decrypt(binary1, d, n,inputType='Binary')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type binary1 (64 bit) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_decrypt(binary1, d, n,inputType='Binary')
+end_time = time.time()
+print(f"Running RSA Decrypt on input type binary1 (64 bit) took {end_time - start_time:.6f} seconds")
 
-#start_time = time.time()
-#result = rsa_decrypt(binary2, d, n,inputType='Binary')
-#end_time = time.time()
-#print(f"Running RSA Encrypt on input type binary1 (128 bit) took {end_time - start_time:.6f} seconds")
+start_time = time.time()
+result = rsa_decrypt(binary2, d, n,inputType='Binary')
+end_time = time.time()
+print(f"Running RSA Decrypt on input type binary1 (128 bit) took {end_time - start_time:.6f} seconds")
 
 #start_time = time.time()
 #result = rsa_decrypt(text1, d, n, inputType='Text')
 #end_time = time.time()
-#print(f"Running RSA Encrypt on input type text1 (length: 44) took {end_time - start_time:.6f} seconds")
+#print(f"Running RSA Decrypt on input type text1 (length: 44) took {end_time - start_time:.6f} seconds")
 
 #start_time = time.time()
 #result = rsa_decrypt(text2, d, n, inputType='Text')
 #end_time = time.time()
-#print(f"Running RSA Encrypt on input type text2 (length: 88) took {end_time - start_time:.6f} seconds")
+#print(f"Running RSA Decrypt on input type text2 (length: 88) took {end_time - start_time:.6f} seconds")
 
 print()
 
